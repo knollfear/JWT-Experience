@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied{% endblock %}
+
+{% block content %}
+  <h1>403 – Access Denied</h1>
+
+  <article>
+    {% if email %}
+      <p>
+        You are signed in as <strong>{{ email }}</strong>, but your account does
+        not include the <strong>{{ required_claim }}</strong> permission.
+      </p>
+    {% else %}
+      <p>
+        You are signed in, but your current token does not include the
+        <strong>{{ required_claim }}</strong> permission.
+      </p>
+    {% endif %}
+
+    <details>
+      <summary>Your current permissions (from JWT)</summary>
+      <pre>{{ permissions }}</pre>
+    </details>
+
+  </article>
+
+  <footer style="margin-top: 2rem;">
+    <a href="/logged-in" class="secondary">Back to your dashboard</a>
+  </footer>
+{% endblock %}

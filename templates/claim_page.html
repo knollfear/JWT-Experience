@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Permission Granted{% endblock %}
+
+{% block content %}
+  <h1>Permission Granted</h1>
+
+  <article>
+    <p>
+      You have successfully accessed an action that requires the
+      <strong>{{ required_claim }}</strong> permission.
+    </p>
+
+    {% if email %}
+      <p>
+        This permission is associated with your account:
+        <strong>{{ email }}</strong>.
+      </p>
+    {% endif %}
+
+    <p>
+      In this demo, permissions are structured as
+      <code>&lt;operation&gt;_&lt;resource&gt;</code>.
+      That means:
+    </p>
+
+    <ul>
+      <li><strong>Operation:</strong> <em>{{ op }}</em></li>
+      <li><strong>Resource:</strong> <em>{{ entity }}</em></li>
+    </ul>
+
+    <p>
+      Because your JWT includes this permission, you are allowed to view or
+      perform actions related to <strong>{{ entity }}</strong> using the
+      <strong>{{ op }}</strong> capability.
+    </p>
+
+    <p>
+      This page exists to demonstrate how permission-gated content works once
+      your token has been validated and your claims have been checked by the
+      middleware and decorators.
+    </p>
+
+    <details>
+      <summary>Your current permissions (from JWT)</summary>
+      <pre>{{ permissions }}</pre>
+    </details>
+  </article>
+
+  <footer style="margin-top: 2rem;">
+    <a href="/logged-in" class="secondary">Back to your dashboard</a>
+  </footer>
+{% endblock %}

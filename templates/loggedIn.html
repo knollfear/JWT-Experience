@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Logged in – JWT Experience{% endblock %}
+
+{% block content %}
+<h1>Welcome!</h1>
+        <p>You are now logged in!</p>
+        <p>What just happened?</p>
+        <ol>
+            <li>You submitted a form requesting a magic link be sent to your E-mail</li>
+            <li>That POST request was processed and used to create a signed JWT with the user's claims.
+            In a real world example the E-mail would have been looked up in an Authorization (authZ)
+            service that would determine what claims this user has.  In this example the desired claims
+            are just part of the POST body</li>
+            <li>The signed JWT was uploaded to an S3 bucket with a time to live (TTL) of 5 minutes.
+            This provides an additional layer of security by removing unused resources promptly.  If this
+            causes user issues it can be adjusted.</li>
+            <li>A signed URL allowing the bearer to download the JWT was created</li>
+            <li>That URL was rewritten to point at a proxy endpoint instead of AWS</li>
+            <li>The proxy URL was sent via E-mail to you</li>
+            <li>You clicked on the link creating a GET request to the proxy endpoint</li>
+            <li>The proxy endpoint used the signed AWS URL to fetch the JWT</li>
+            <li>The JWT was written to your cookies using a 302 redirect response</li>
+            <li>You ended up here</li>
+        </ol>
+        <p>What can I do now that I am signed in?</p>
+        <p>You can click any of the links below.  If you have the appropriate permissions you will see a page.
+        If not, you will be redirected back to the login page, which will redirect you back here.  You can verify this in
+        the network panel of the debug tools.</p>
+        <ul>
+          <li><a href="/logged-in/claim/read/foo">📄 Read Foo</a></li>
+          <li><a href="/logged-in/claim/write/foo">✏️ Write Foo</a></li>
+
+          <li><a href="/logged-in/claim/read/bar">📄 Read Bar</a></li>
+          <li><a href="/logged-in/claim/write/bar">✏️ Write Bar</a></li>
+
+          <li><a href="/logged-in/claim/read/admin">📄 Read Admin</a></li>
+          <li><a href="/logged-in/claim/write/admin">✏️ Write Admin</a></li>
+        </ul>
+        <p>What is a JWT?</p>
+        <p>A JWT is a JSON Web Token.  For a full explanation please visit
+        <a href="http://jwt.io" target="_blank">JWT.io</a>.  Briefly and incompletely, a JWT is a JSON payload that has been
+        cryptographically signed.  Signing the token ensures that the payload can not be altered without detection.  If the
+        JSON payload and the computed signature do not match, the JWT is invalid and will not be accepted.  Only
+        tokens signed with the correct secret key will be valid.  With symmetric (HMAC) signing, the same secret key is used to
+        both sign and verify the token.
+        In a secure design, this secret should never be shared — only the issuer should possess it.
+        Practically, this means that only the issuer can validate the token, because sharing the secret
+        would be an anti-pattern and would expand the trust boundary.
+        </p>
+        <p>
+        JWTs can also be signed using a public/private key pair (e.g., RS256). This allows the issuer
+        to keep the private key secret while publishing the public key so that any service can safely
+         verify tokens without the risk associated with shared secrets.
+         </p>
+            <div id="showToken"></div>
+             <button hx-get="/logged-in/showToken" hx-target="#showToken">Show me my token</button>
+             <a href="/logout">
+                <button>Log Out</button>
+             </a>
+
+{% endblock %}

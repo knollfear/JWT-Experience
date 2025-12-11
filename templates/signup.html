@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in – JWT POC{% endblock %}
+
+{% block content %}
+  <h1>Sign in with email</h1>
+  <p>Enter your email and choose the permissions you are requesting.</p>
+
+  <!--
+    Basic version: normal form submit.
+    If you want HTMX partial refresh instead, see the comment below.
+  -->
+  <form
+    method="post"
+    action="/request-login"
+  >
+    <fieldset id="form-container">
+      <label for="email">
+        Email
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="you@example.com"
+          required
+        />
+      </label>
+    </fieldset>
+      <p>This application is missing an authorization service so you must choose your permissions below.  In a production application your E-mail address
+      would be sent to some kind of authorization service to determine what permissions to grant you.  In this example you simply pick what permissions you want below
+      and they will be added automatically.  The logged in permission is disabled because it is granted to everyone and the admin permissions are disabled to ensure that you
+      are missing permissions for at least one endpoint.</p>
+      <fieldset>
+        <legend>Requested permissions</legend>
+        <label>
+            <input
+              type="checkbox"
+              name="permissions"
+              value="read_loggedin"
+              checked
+              disabled
+            />
+            Read /loggedIn
+        </label>
+        {% for perm_value, perm_label in available_permissions %}
+          <label>
+            <input
+              type="checkbox"
+              name="permissions"
+              value="{{ perm_value }}"
+            />
+            {{ perm_label }}
+          </label>
+        {% endfor %}
+        <label>
+            <input
+              type="checkbox"
+              name="permissions"
+              value="read_admin"
+
+              disabled
+            />
+            Read Admin (Disabled)
+        </label>
+        <label>
+            <input
+              type="checkbox"
+              name="permissions"
+              value="write_admin"
+
+              disabled
+            />
+            Write Admin (Disabled)
+        </label>
+      </fieldset>
+      <p>JWT access tokens can be valid for any length of time you choose. When choosing an expiration time, you must balance usability (how often the user needs to log in) with security (the potential damage if a token is stolen).</p>
+
+<p>JWTs are cryptographically secure when signed and managed correctly, but any token stored on a user’s device can be stolen by someone who gains access to that device, or through other client-side vulnerabilities.</p>
+
+<p>The primary defense against the misuse of a stolen token is limiting how long it remains valid. Short-lived access tokens reduce the window of exposure and are considered best practice.</p>
+      <fieldset id="form-length">
+      <label for="expire_in">
+        Expire in
+        <input
+          type="number"
+          id="expire_in"
+          name="expire_in"
+          value="60"
+          required
+        />
+        Minutes
+      </label>
+
+
+
+      <button type="submit">Send sign-in link</button>
+    </fieldset>
+  </form>
+
+  <!--
+    Note on HTMX:
+    - hx-post="/request-login" tells htmx to AJAX-submit to that endpoint.
+    - hx-target="#form-container" + hx-swap="outerHTML" lets you replace
+      the form area with whatever HTML the server returns.
+    If you prefer a classic full-page POST/redirect, just remove
+    the hx-* attributes.
+  -->
+{% endblock %}

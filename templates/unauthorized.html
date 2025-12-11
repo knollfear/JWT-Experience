@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Unauthorized{% endblock %}
+
+{% block content %}
+  <h1>401 – Unauthorized</h1>
+
+  <article>
+    <p>
+      You attempted to access a page that requires authentication,
+      but no valid session token was found.
+    </p>
+
+    <p>
+      Please return to the start page and request a new sign-in link.
+    </p>
+  </article>
+
+  <footer style="margin-top: 2rem;">
+    <a href="/" class="secondary">Return to start</a>
+  </footer>
+{% endblock %}

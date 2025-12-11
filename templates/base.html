@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <title>{% block title %}JWT Login POC{% endblock %}</title>
+
+    <!-- Pico CSS (CDN) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
+    />
+
+    <!-- HTMX (CDN) -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+
+    <main class="container">
+        {% if message %}
+          <article>
+            {{ message }}
+          </article>
+        {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>
