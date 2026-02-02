@@ -17,7 +17,7 @@ import os
 import uuid
 import resend
 import jwt
-
+from idp_router import router as idp_router
 from middleware import JWTAuthMiddleware
 
 resend.api_key = os.environ.get("RESEND_API_KEY")
@@ -40,7 +40,7 @@ app.add_middleware(JWTAuthMiddleware)
 templates = Jinja2Templates(directory="templates")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
+app.include_router(idp_router, prefix="/idp/oidc", tags=["MockIdP"])
 @app.get("/", response_class=HTMLResponse)
 async def show_signup(request: Request, message: Optional[str] = None):
     if request.state.token_payload is not None:
