@@ -61,19 +61,17 @@ def get_base_url(request: Request):
 
 
 @router.get("/", response_class=HTMLResponse)
-async def idp_root(request: Request):
+async def root_dashboard(request: Request):
     base = str(request.base_url).rstrip('/')
     # These are dummy values that simulate a request coming from a client like Keycloak
-    test_authorize_url = f"{base}/idp/oidc/authorize?redirect_uri={base}/idp/oidc/callback-preview&state=test-123&nonce=12345"
+    persona_url = f"{base}/idp/persona/oidc/authorize?redirect_uri={base}/idp/persona/oidc/callback-preview&state=test-123&nonce=12345"
+    expert_url = f"{base}/idp/expert/oidc/authorize?redirect_uri={base}/idp/expert/oidc/callback-preview&state=test-123&nonce=12345"
 
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "test_url": test_authorize_url}
-    )
+    return templates.TemplateResponse("IDP/dashboard.html", {"request": request, 'persona_url': persona_url, 'expert_url':expert_url})
 
 
 # A simple helper page to show you what the result would have looked like
-@router.get("/callback-preview", response_class=HTMLResponse)
+@router.get("/{mode}/oidc/callback-preview", response_class=HTMLResponse)
 async def callback_preview(request: Request, code: str, state: str):
     claims = AUTH_CODES.pop(code, None)
     payload={}
@@ -118,18 +116,36 @@ async def callback_preview(request: Request, code: str, state: str):
     """
 # --- OIDC ENDPOINTS ---
 
-@router.get("/.well-known/openid-configuration")
-async def discovery(request: Request):
-    base = "https://jwt.knollfear.com/idp/oidc"
+# idp_router.py
+
+@router.get("/{mode}/.well-known/openid-configuration")
+async def discovery(request: Request, mode: str):
+    # The 'issuer' MUST match the URL Keycloak is configured with
+    base = f"https://jwt.knollfear.com/idp/{mode}/oidc"
     return {
         "issuer": base,
         "authorization_endpoint": f"{base}/authorize",
         "token_endpoint": f"{base}/token",
         "jwks_uri": f"{base}/jwks",
-        "response_types_supported": ["code"],
-        "subject_types_supported": ["public"],
-        "id_token_signing_alg_values_supported": ["RS256"]
+        # ... rest of your config
     }
+
+
+@router.get("/{mode}/oidc/authorize", response_class=HTMLResponse)
+async def authorize(request: Request, mode: str, redirect_uri: str, state: str, nonce: str = None):
+    # Determine which UI to show
+    is_persona = (mode == "persona")
+
+    return templates.TemplateResponse("IDP/index.html", {
+        "request": request,
+        "is_persona": is_persona,  # Pass this to the template
+        "mode": mode,
+        "redirect_uri": redirect_uri,
+        "state": state,
+        "nonce": nonce,
+        "personas": PERSONAS.keys(),
+        "default_json": json.dumps(PERSONAS['default'], indent=4)
+    })
 
 
 @router.get("/jwks")
@@ -167,39 +183,27 @@ async def token(request: Request, code: str = Form(...)):
         "expires_in": 3600
     }
 
-
-@router.get("/authorize", response_class=HTMLResponse)
-async def authorize(request: Request, redirect_uri: str, state: str, nonce: str):
-
-    return templates.TemplateResponse(
-        "index.html",  # This name is arbitrary since we're using TemplateResponse with a string in some setups
-        {
-            "request": request,
-            "redirect_uri": redirect_uri,
-            "nonce": nonce,  # <--- Capture the nonce
-            "state": state,
-            "personas": PERSONAS.keys(),
-            "default_json": json.dumps(PERSONAS['default'], indent=4)
-        }
-    )
-
-
 @router.get("/persona-template", response_class=PlainTextResponse)
 async def persona_template(persona: str = "default"):
     return json.dumps(PERSONAS.get(persona, PERSONAS['default']), indent=4)
 
 
-@router.post("/login-callback")
+@router.post("/{mode}/oidc/login-callback")
 async def login_callback(
+mode: str,
+    persona_choice: str = Form(None),
+    custom_claims: str = Form(None),
         redirect_uri: str = Form(...),
         state: str = Form(...),
         nonce: str = Form(None),  # <--- Receive the nonce
-        custom_claims: str = Form(...)
+
 ):
-    try:
+    if mode == "persona":
+        # Use the static persona data only
+        claims = PERSONAS.get(persona_choice, PERSONAS['default'])
+    else:
+        # Use the raw JSON from the textarea
         claims = json.loads(custom_claims)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid JSON")
 
     # If a nonce was provided, add it to the claims dictionary
     if nonce:

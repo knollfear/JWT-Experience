@@ -40,7 +40,7 @@ app.add_middleware(JWTAuthMiddleware)
 templates = Jinja2Templates(directory="templates")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-app.include_router(idp_router, prefix="/idp/oidc", tags=["MockIdP"])
+app.include_router(idp_router, prefix="/idp", tags=["MockIdP"])
 @app.get("/", response_class=HTMLResponse)
 async def show_signup(request: Request, message: Optional[str] = None):
     if request.state.token_payload is not None:

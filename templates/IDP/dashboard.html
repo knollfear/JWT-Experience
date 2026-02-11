@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title>Mock IDP Dashboard</title>
+</head>
+<body class="container" style="padding-top: 50px;">
+    <header style="text-align: center; margin-bottom: 3rem;">
+        <h1>Mock Identity Provider</h1>
+        <p>Select an operational mode for OIDC testing</p>
+    </header>
+
+    <div class="grid">
+        <article>
+            <header>🚀 <strong>Expert Mode</strong></header>
+            <p>Full control over the ID Token. Edit raw JSON claims in the browser before signing.</p>
+            <footer>
+                <a href="{{ expert_url }}" role="button" class="secondary">Launch Expert Bench</a>
+            </footer>
+        </article>
+
+        <article>
+            <header>🎭 <strong>Persona Mode</strong></header>
+            <p>Select from pre-defined security profiles. No raw JSON editing (Security Team Approved).</p>
+            <footer>
+                <a href="{{ persona_url }}" role="button">Launch Persona Bench</a>
+            </footer>
+        </article>
+    </div>
+
+    <section style="margin-top: 3rem;">
+        <article>
+            <h5>System Integration Info</h5>
+            <table class="striped">
+                <thead>
+                    <tr>
+                        <th>Mode</th>
+                        <th>Discovery Endpoint (Issuer)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Expert</strong></td>
+                        <td><code>https://jwt.knollfear.com/idp/expert/oidc</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Persona</strong></td>
+                        <td><code>https://jwt.knollfear.com/idp/persona/oidc</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+    </section>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mock IDP Test Bench</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        body { padding: 2rem 0; }
+        textarea { font-family: 'Courier New', monospace; min-height: 300px; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <article>
+            <header>
+                <strong>Identity Injection</strong>
+                <p>Modify the claims below before sending back to Keycloak.</p>
+            </header>
+
+            <form action="/idp/{{ mode }}/oidc/login-callback" method="post">
+                <input type="hidden" name="redirect_uri" value="{{ redirect_uri }}">
+                <input type="hidden" name="state" value="{{ state }}">
+                <input type="hidden" name="nonce" value="{{ nonce }}">
+                {% if is_persona %}
+                    <h5>Select Identity Profile:</h5>
+                    {% for name in personas %}
+                    <label>
+                        <input type="radio" name="persona_choice" value="{{ name }}" {% if loop.first %}checked{% endif %}>
+                        {{ name | capitalize }}
+                    </label>
+                    {% endfor %}
+                    <p><small>Note: Manual JSON editing is disabled for this security profile.</small></p>
+                {% else %}
+                    <label for="claims">Edit ID Token Claims (JSON):</label>
+                    <textarea id="claims" name="custom_claims">{{ default_json }}</textarea>
+                {% endif %}
+
+                <button type="submit">Sign & Authorize</button>
+            </form>
+        </article>
+    </main>
+</body>
+</html>
