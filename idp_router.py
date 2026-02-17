@@ -51,7 +51,28 @@ PERSONAS = {
         "department": "Engineering",
         "roles": ["admin", "editor", "viewer"],
         "is_internal": True
+    },
+    "Member UBV861": {
+        "sub": "member-861",
+        "email": "Member.UBV861@example.com",
+        "preferred_username": "member-ubv-861",
+        "department": "Member",
+        "roles": ["viewer"],
+        "is_internal": False,
+        "memberID": "UBV861037416",
+        "LOB": "Commercial"
+    },
+    "Member BOT814": {
+        "sub": "member-814",
+        "email": "Member.BOT814@example.com",
+        "preferred_username": "member-bot-814",
+        "department": "Member",
+        "roles": ["viewer"],
+        "is_internal": False,
+        "memberID": "BOT814569917",
+        "LOB": "Commercial"
     }
+
 }
 
 
@@ -72,13 +93,14 @@ async def root_dashboard(request: Request):
 
 # A simple helper page to show you what the result would have looked like
 @router.get("/{mode}/oidc/callback-preview", response_class=HTMLResponse)
-async def callback_preview(request: Request, code: str, state: str):
+async def callback_preview(request: Request, code: str, state: str, mode:str):
     claims = AUTH_CODES.pop(code, None)
     payload={}
     if claims:
         now = int(time.time())
+        base = f"https://jwt.knollfear.com/idp/{mode}/oidc"
         payload = {
-            "iss": "https://jwt.knollfear.com/idp/oidc",
+            "iss": base,
             "aud": "my-keycloak-client",
             "iat": now,
             "exp": now + 3600,
@@ -148,40 +170,10 @@ async def authorize(request: Request, mode: str, redirect_uri: str, state: str, 
     })
 
 
-@router.get("/jwks")
+@router.get("/{mode}/oidc/jwks")
 async def jwks():
     # Wrap the key in the "keys" array standard
     return {"keys": [JWK_PUBLIC]}
-
-
-@router.post("/token")
-async def token(request: Request, code: str = Form(...)):
-    claims = AUTH_CODES.pop(code, None)
-    if not claims:
-        return JSONResponse(status_code=400, content={"error": "invalid_grant"})
-
-    now = int(time.time())
-    payload = {
-        "iss": "https://jwt.knollfear.com/idp/oidc",
-        "aud": "my-keycloak-client",
-        "iat": now,
-        "exp": now + 3600,
-        "sub": claims.get("sub", "user-default")
-    }
-    payload.update(claims)
-
-    # Sign using the PEM string and the explicit Header
-    header = {'alg': 'RS256', 'kid': JWK_PUBLIC['kid']}
-
-    # Use the PEM key directly for signing
-    encoded_token = jwt.encode(header, payload, PRIVATE_KEY_PEM).decode('utf-8')
-
-    return {
-        "access_token": "mock-access-token",
-        "id_token": encoded_token,
-        "token_type": "Bearer",
-        "expires_in": 3600
-    }
 
 @router.get("/persona-template", response_class=PlainTextResponse)
 async def persona_template(persona: str = "default"):
@@ -214,15 +206,15 @@ mode: str,
     return RedirectResponse(url=f"{redirect_uri}?state={state}&code={code}", status_code=303)
 
 
-@router.post("/token")
-async def token(request: Request, code: str = Form(...)):
+@router.post("/{mode}/oidc/token")
+async def token(request: Request, mode:str, code: str = Form(...)):
     claims = AUTH_CODES.pop(code, None)
     if not claims:
         return JSONResponse(status_code=400, content={"error": "invalid_grant"})
 
     now = int(time.time())
     payload = {
-        "iss": "https://jwt.knollfear.com/idp/oidc",
+        "iss": f"https://jwt.knollfear.com/idp/{mode}/oidc",
         "aud": "my-keycloak-client",
         "iat": now,
         "exp": now + 3600,
